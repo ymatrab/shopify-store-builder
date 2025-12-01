@@ -1,0 +1,38 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Shop {
+  id           Int      @id @default(autoincrement())
+  shopDomain   String   @unique
+  accessToken  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  generationSessions GenerationSession[]
+}
+
+model GenerationSession {
+  id          String   @id @default(cuid())
+  shopId      Int
+  shop        Shop     @relation(fields: [shopId], references: [id])
+  status      String   // 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'FAILED'
+  currentStep String   // 'STARTED' | 'DISCOVERY' | 'PLANNER' | 'IMPLEMENTATION' | 'DONE' | 'ERROR'
+  errorMessage String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  blueprint StoreBlueprint?
+}
+
+model StoreBlueprint {
+  id                Int      @id @default(autoincrement())
+  generationId      String   @unique
+  generationSession GenerationSession @relation(fields: [generationId], references: [id])
+  data              Json     // full StoreBlueprint JSON
+}
