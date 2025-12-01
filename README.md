@@ -4,19 +4,14 @@ This is the backend for an AI-powered Shopify Store Builder. It uses a multi-age
 
 ## Prerequisites
 
-- **Node.js** (v18 or v20+)
-- **PostgreSQL** (running locally or accessible via URL)
-- **npm**
+- **Docker** and **Docker Compose**
 
-## Setup
+## Setup & Running
 
-1.  **Install Dependencies**
-    ```bash
-    npm install
-    ```
+The entire application (backend + database) is dockerized.
 
-2.  **Environment Configuration**
-    Create a `.env` file in the root directory (if not already present) with the following variables:
+1.  **Environment Configuration**
+    Create a `.env` file in the root directory with your API keys:
 
     ```env
     SHOPIFY_API_KEY=your_shopify_api_key
@@ -24,35 +19,25 @@ This is the backend for an AI-powered Shopify Store Builder. It uses a multi-age
     SHOPIFY_SCOPES=write_products,write_themes,write_content,read_products,read_themes,read_content
     SHOPIFY_APP_URL=http://localhost:3000
     OPENAI_API_KEY=your_openai_api_key
-    DATABASE_URL="postgresql://user:password@localhost:5432/shopify_ai_builder?schema=public"
-    PORT=3000
     ```
+    *(Note: `DATABASE_URL` is configured automatically in `docker-compose.yml`)*
 
-3.  **Database Setup**
-    Run the Prisma migrations to create the database schema:
+2.  **Start the Application**
     ```bash
-    npx prisma migrate dev
+    docker-compose up --build
     ```
 
-## Running the Server
-
-Start the development server:
-```bash
-npm run dev
-```
-
-The server will start on `http://localhost:3000` (or the port specified in `.env`).
+    This command will:
+    - Build the Node.js application image.
+    - Start a PostgreSQL container.
+    - Run database migrations.
+    - Start the backend server on port 3000.
 
 ## Testing the Agent
 
-The agent flow is triggered via a REST API. You can use `curl` or Postman to test it.
+Once the containers are running, you can test the API.
 
 ### 1. Start a Store Generation
-
-This endpoint triggers the multi-agent flow:
-1.  **Discovery Agent**: Analyzes the shop (stubbed).
-2.  **Planner Agent**: Generates branding and layout using LLM (stubbed).
-3.  **Implementation Agent**: Creates a new theme and updates settings (stubbed).
 
 **Request:**
 
@@ -79,33 +64,8 @@ curl -X POST http://localhost:3000/api/generation \
 
 ### 2. Check Generation Status
 
-Use the `generationId` from the previous response to check the progress.
-
-**Request:**
-
 ```bash
-# Replace <generation_id> with the actual ID
 curl http://localhost:3000/api/generation/<generation_id>
-```
-
-**Response (In Progress):**
-```json
-{
-  "id": "...",
-  "status": "IN_PROGRESS",
-  "currentStep": "PLANNER",
-  ...
-}
-```
-
-**Response (Done):**
-```json
-{
-  "id": "...",
-  "status": "DONE",
-  "currentStep": "DONE",
-  "previewUrl": "/?preview_theme_id=987654321"
-}
 ```
 
 ## Architecture Overview
